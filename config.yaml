@@ -1,0 +1,18 @@
+# Configuration file for pose estimation project
+# Add your configuration parameters below
+
+task: "object_detection"  # Options: "pose", "hand"
+
+input_path: "D:\\youtube\\skiathos-sep 2025\\cats\\PXL_20250910_163543016.mp4"   #
+
+output_dir: ./results
+
+output_name: "cats.mp4"
+
+frames_dir: ./frames
+
+# Hand drawing parameters
+hand_drawing:
+  radius: 20
+  color_landmarks: [179, 124, 247]  # BGR
+  color_connections: [225, 225, 225]  # BGR
