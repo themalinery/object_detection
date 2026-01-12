@@ -3,7 +3,7 @@
 
 task: "object_detection"  # Options: "pose", "hand"
 
-input_path: "D:\\youtube\\skiathos-sep 2025\\cats\\PXL_20250910_163543016.mp4"   #
+input_path: "D:\\youtube\\skiathos-sep 2025\\cats\\PXL_20250910_163543016.mp4" 
 
 output_dir: ./results
 
