@@ -2,6 +2,24 @@ import gradio as gr
 import tempfile
 import shutil
 from pathlib import Path
+import sys
+
+# Monkey patch to fix gradio_client schema parsing bug
+try:
+    from gradio_client import utils as client_utils
+    
+    # Patch the main function that fails when encountering booleans
+    original_json_schema_to_python_type = client_utils._json_schema_to_python_type
+    
+    def patched_json_schema_to_python_type(schema, defs=None):
+        # If schema is a boolean, return a simple dict representation
+        if isinstance(schema, bool):
+            return "bool"
+        return original_json_schema_to_python_type(schema, defs)
+    
+    client_utils._json_schema_to_python_type = patched_json_schema_to_python_type
+except Exception as e:
+    print(f"Warning: Could not apply monkey patch: {e}")
 
 from src.utils import create_video_from_images, object_detection
 
@@ -10,7 +28,7 @@ def process_video(video_file, labels_text, frame_color):
     text_labels = [label.strip() for label in labels_text.split(',') if label.strip()]
     
     if not text_labels:
-        raise gr.Error("Please enter at least one label")
+        return None
     
     # Create config
     config = {
@@ -39,45 +57,29 @@ def process_video(video_file, labels_text, frame_color):
         
         return str(final_output)
 
-# Gradio interface
-with gr.Blocks(title="Video Object Detection", theme=gr.themes.Soft()) as demo:
+# Simple gradio interface
+with gr.Blocks() as demo:
     gr.Markdown("# Video Object Detection")
-    gr.Markdown("Upload a video, enter labels to detect, choose frame color, and download the processed video.")
     
     with gr.Row():
-        with gr.Column():
-            video_input = gr.Video(label="Upload Video")
-            labels_input = gr.Textbox(label="Detection Labels (comma-separated)", placeholder="e.g., cat, dog, person")
-            color_input = gr.ColorPicker(label="Bounding Box Color", value="#FF0000")
-            process_btn = gr.Button("Process Video", variant="primary")
-        
-        with gr.Column():
-            # Output section
-            gr.Markdown("## Output")
-            
-            output_video = gr.Video(label="Processed Video", interactive=False)
-            
-            download_button = gr.File(label="Download Processed Video", visible=False)
+        video_input = gr.File(label="Upload Video", file_types=[".mp4", ".avi", ".mov"])
+        labels_input = gr.Textbox(label="Labels (comma-separated)", placeholder="cat,dog,person")
+        color_input = gr.ColorPicker(label="Bounding Box Color", value="#FF0000")
     
-    # Handle processing
-    def process_and_update(video, labels_text, frame_color):
+    process_btn = gr.Button("Process")
+    output = gr.File(label="Download")
+    
+    def process(video, labels, color):
+        if not video or not labels:
+            return None
         try:
-            # Update status
-            gr.Info("Processing video... This may take a few minutes.")
-            
-            output_path = process_video(video, labels_text, frame_color)
-            
-            gr.Info("Video processing complete!")
-            
-            return output_path, output_path
+            result = process_video(video, labels, color)
+            return result
         except Exception as e:
-            raise gr.Error(f"Processing failed: {str(e)}")
+            print(f"Error: {e}")
+            return None
     
-    process_btn.click(
-        fn=process_and_update,
-        inputs=[video_input, labels_input, color_input],
-        outputs=[output_video, download_button]
-    )
+    process_btn.click(process, inputs=[video_input, labels_input, color_input], outputs=output)
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(share=True)
