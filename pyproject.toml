@@ -3,7 +3,7 @@ name = "object-detection"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
     "absl-py>=1.0.0",
     "accelerate>=1.10.1",
