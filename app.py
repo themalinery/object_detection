@@ -82,4 +82,4 @@ with gr.Blocks() as demo:
     process_btn.click(process, inputs=[video_input, labels_input, color_input], outputs=output)
 
 if __name__ == "__main__":
-    demo.launch(share=True)
+    demo.launch()
