@@ -118,8 +118,8 @@ def object_detection(path_video, output_folder, config):
             break
 
         frame_count += 1
-        if frame_count == 90:  # limit to first 30 frames
-            break
+        # if frame_count == 90:  # limit to first 30 frames
+        #     break
 
     # Release the video capture and close windows
     vidcap.release()
